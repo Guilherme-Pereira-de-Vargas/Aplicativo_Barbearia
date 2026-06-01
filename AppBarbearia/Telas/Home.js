@@ -1,7 +1,7 @@
 import { StyleSheet, View, ImageBackground, Text, TouchableOpacity } from 'react-native';
 import Logo from './Componentes/logo';
 
-export default function Inicial({ navigation }) {
+export default function Home({ navigation }) {
   return (
     <View style={styles.container}>
       <ImageBackground
