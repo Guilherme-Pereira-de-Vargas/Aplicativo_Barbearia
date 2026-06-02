@@ -11,7 +11,7 @@ export default function Pagamento() {
 
   return (
     <ScrollView style={s.container} contentContainerStyle={s.content}>
-      <Text style={s.title}>KINGS <Text style={s.gold}>BARBER</Text></Text>
+      <Text style={s.title}>THE <Text style={s.gold}>CUT</Text></Text>
       <View style={s.divider} />
 
    
@@ -65,7 +65,7 @@ export default function Pagamento() {
       {method === 'pix' && (
         <View style={[s.card, { alignItems: 'center', gap: 12 }]}>
           <View style={s.qr}><Text style={{ fontSize: 52 }}>⬛</Text></View>
-          <Text style={[s.gold, { fontSize: 12 }]}>kingsbarber@barbearia.com.br</Text>
+          <Text style={[s.gold, { fontSize: 12 }]}>thecut@barbearia.com.br</Text>
           <Text style={s.note}>Escaneie o QR Code ou copie a chave Pix acima.</Text>
         </View>
       )}
