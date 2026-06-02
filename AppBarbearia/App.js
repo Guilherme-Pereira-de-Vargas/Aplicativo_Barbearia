@@ -1,42 +1,22 @@
-import { StyleSheet, View, ImageBackground, Text, TouchableOpacity } from 'react-native';
+import { StyleSheet, View, ImageBackground, TouchableOpacity, Text } from 'react-native';
 import Logo from './Componentes/logo';
 
-export default function Inicial({ navigation }) {
+export default function Inicial() {
   return (
     <View style={styles.container}>
       <ImageBackground
-        source={require('./Imagens/hm1.jpg')}
+        source={require('./Imagens/cadastro.png')}
         style={styles.fundo}
         resizeMode="cover"
       >
-        <View style={styles.overlay} />
-
         <Logo />
 
-        <Text style={styles.slogan}>✂️ Estilo que fala por você 💈</Text>
-
-        <TouchableOpacity
-          style={[styles.btn, styles.btnDourado]}
-          onPress={() => navigation?.navigate('Agendar')}
-          activeOpacity={0.8}
-        >
-          <Text style={styles.btnTextoEscuro}>📅  Agendar</Text>
+        <TouchableOpacity style={[styles.btn, styles.btnEntrar]}>
+          <Text style={styles.btnTextoEntrar}>Entrar</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity
-          style={[styles.btn, styles.btnDourado]}
-          onPress={() => navigation?.navigate('Catalogo')}
-          activeOpacity={0.8}
-        >
-          <Text style={styles.btnTextoEscuro}>📖  Catálogo</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[styles.btn, styles.btnEscuro]}
-          onPress={() => navigation?.navigate('Contato')}
-          activeOpacity={0.8}
-        >
-          <Text style={styles.btnTextoDourado}>📞  Contato</Text>
+        <TouchableOpacity style={[styles.btn, styles.btnCadastrar]}>
+          <Text style={styles.btnTextoCadastrar}>Cadastrar</Text>
         </TouchableOpacity>
 
       </ImageBackground>
@@ -54,55 +34,35 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
     alignItems: 'center',
-    justifyContent: 'center',
-  },
-
-  overlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0, 0, 0, 0.55)',
-  },
-
-  slogan: {
-    color: '#C9A86A',
-    fontSize: 16,
-    letterSpacing: 2,
-    textTransform: 'uppercase',
-    marginBottom: 50,
-    fontStyle: 'italic',
-    textAlign: 'center',
   },
 
   btn: {
-    width: '80%',
-    marginTop: 16,
-    paddingVertical: 16,
-    borderRadius: 50,
+    width: '60%',
+    paddingVertical: 10,
+    borderRadius: 25,
     alignItems: 'center',
+    justifyContent: 'center',
   },
 
-  btnDourado: {
+  btnEntrar: {
     backgroundColor: '#C9A86A',
+    marginTop: 240,
   },
 
-  btnEscuro: {
+  btnCadastrar: {
     backgroundColor: '#111',
-    borderWidth: 1,
-    borderColor: '#C9A86A',
+    marginTop: 20,
   },
 
-  btnTextoEscuro: {
-    color: '#111',
+  btnTextoEntrar: {
+    color: '#fff',
     fontSize: 15,
-    fontWeight: '700',
-    letterSpacing: 1.5,
-    textTransform: 'uppercase',
+    fontWeight: 'bold',
   },
 
-  btnTextoDourado: {
-    color: '#C9A86A',
+  btnTextoCadastrar: {
+    color: '#fff',
     fontSize: 15,
-    fontWeight: '700',
-    letterSpacing: 1.5,
-    textTransform: 'uppercase',
+    fontWeight: 'bold',
   },
 });

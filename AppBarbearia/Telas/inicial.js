@@ -1,4 +1,4 @@
-import { StyleSheet, View, ImageBackground, Button } from 'react-native';
+import { StyleSheet, View, ImageBackground, TouchableOpacity, Text } from 'react-native';
 import Logo from './Componentes/logo';
 
 export default function Inicial() {
@@ -9,16 +9,15 @@ export default function Inicial() {
         style={styles.fundo}
         resizeMode="cover"
       >
-
         <Logo />
 
-        <View style={styles.btn}>
-          <Button title="Entrar" color="#C9A86A" />
-        </View>
+        <TouchableOpacity style={[styles.btn, styles.btnEntrar]}>
+          <Text style={styles.btnTextoEntrar}>Entrar</Text>
+        </TouchableOpacity>
 
-        <View style={styles.btn2}>
-          <Button title="Cadastrar" color="#111" />
-        </View>
+        <TouchableOpacity style={[styles.btn, styles.btnCadastrar]}>
+          <Text style={styles.btnTextoCadastrar}>Cadastrar</Text>
+        </TouchableOpacity>
 
       </ImageBackground>
     </View>
@@ -38,12 +37,32 @@ const styles = StyleSheet.create({
   },
 
   btn: {
-    width: '90%',
+    width: '60%',
+    paddingVertical: 10,
+    borderRadius: 25,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  btnEntrar: {
+    backgroundColor: '#C9A86A',
     marginTop: 240,
   },
 
-  btn2: {
-    width: '90%',
-    marginTop: 40,
+  btnCadastrar: {
+    backgroundColor: '#111',
+    marginTop: 20,
+  },
+
+  btnTextoEntrar: {
+    color: '#fff',
+    fontSize: 15,
+    fontWeight: 'bold',
+  },
+
+  btnTextoCadastrar: {
+    color: '#fff',
+    fontSize: 15,
+    fontWeight: 'bold',
   },
 });
