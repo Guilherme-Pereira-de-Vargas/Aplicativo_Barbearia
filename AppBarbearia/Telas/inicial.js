@@ -1,24 +1,28 @@
 import { StyleSheet, View, ImageBackground, TouchableOpacity, Text } from 'react-native';
-import Logo from './Componentes/logo';
+import Logo from '../Componentes/logo';
 
-export default function Inicial() {
+export default function Inicial({ navigation }) {
   return (
     <View style={styles.container}>
       <ImageBackground
-        source={require('./Imagens/cadastro.png')}
+        source={require('../Imagens/cadastro.png')}
         style={styles.fundo}
         resizeMode="cover"
       >
         <Logo />
-
-        <TouchableOpacity style={[styles.btn, styles.btnEntrar]}>
+        <TouchableOpacity
+          style={[styles.btn, styles.btnEntrar]}
+          onPress={() => navigation.navigate('Login')}
+        >
           <Text style={styles.btnTextoEntrar}>Entrar</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={[styles.btn, styles.btnCadastrar]}>
+        <TouchableOpacity
+          style={[styles.btn, styles.btnCadastrar]}
+          onPress={() => navigation.navigate('Cadastro')}
+        >
           <Text style={styles.btnTextoCadastrar}>Cadastrar</Text>
         </TouchableOpacity>
-
       </ImageBackground>
     </View>
   );

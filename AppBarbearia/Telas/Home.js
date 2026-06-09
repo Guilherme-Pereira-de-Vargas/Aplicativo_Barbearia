@@ -1,11 +1,11 @@
 import { StyleSheet, View, ImageBackground, Text, TouchableOpacity } from 'react-native';
-import Logo from './Componentes/logo';
+import Logo from '../Componentes/logo';
 
 export default function Home({ navigation }) {
   return (
     <View style={styles.container}>
       <ImageBackground
-        source={require('./Imagens/hm1.jpg')}
+        source={require('../Imagens/hm1.jpg')}
         style={styles.fundo}
         resizeMode="cover"
       >
