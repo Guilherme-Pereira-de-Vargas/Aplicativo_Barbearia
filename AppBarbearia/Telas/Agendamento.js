@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Alert, Dimensions } from 'react-native';
 
 const { width } = Dimensions.get('window');
-const CELL = Math.floor((width - 60) / 7);
+const TAMANHO_CELULA = Math.floor((width - 60) / 7);
 
 const servicos = ['Corte', 'Sobrancelha', 'Barba', 'Lavar cabelo', '', 'Texturizado'];
 const horarios = ['09:00', '10:00', '11:00', '13:00', '14:00', '15:00', '16:00', '17:00'];

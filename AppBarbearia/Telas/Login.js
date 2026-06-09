@@ -1,6 +1,6 @@
-import { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, ImageBackground, Alert } from 'react-native';
-import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
+import { useState } from 'react'; 
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, ImageBackground, Alert } from 'react-native'; 
+import { getAuth, signInWithEmailAndPassword } from "firebase/auth"; 
 import { firebaseConfig } from "../firebaseConfig";
 
 export default function Login({ navigation }) {
@@ -14,21 +14,18 @@ export default function Login({ navigation }) {
     if (!mail.trim() || !senha.trim()) {
       Alert.alert('Atenção', 'Preencha e-mail e senha.');
       return;
-    } else {
+    }
+
     signInWithEmailAndPassword(auth, mail, senha)
       .then((userCredential) => {
-        // Signed in 
-        const user = userCredential.user;
-        console.log(user)
-        navigation.navigate('goHome')
-        // ...
+        console.log(userCredential.user);
+        navigation.navigate('goHome');
       })
       .catch((error) => {
-        console.log(error)
-        Alert.alert(error.message)
+        console.log(error);
+        Alert.alert('Erro', error.message);
       });
-    }
-  }
+  };
 
   return (
     <ImageBackground
@@ -41,18 +38,12 @@ export default function Login({ navigation }) {
       <View style={s.area}>
         <Text style={s.logo}>✂️</Text>
 
-        <Text style={s.titulo}>
-          KINGS BARBER
-        </Text>
+        <Text style={s.titulo}>KINGS BARBER</Text>
 
-        <Text style={s.subTit}>
-          Entre na sua conta
-        </Text>
+        <Text style={s.subTit}>Entre na sua conta</Text>
 
         <View style={s.box}>
-          <Text style={s.lbl}>
-            E-MAIL
-          </Text>
+          <Text style={s.lbl}>E-MAIL</Text>
 
           <TextInput
             style={s.campo}
@@ -62,13 +53,11 @@ export default function Login({ navigation }) {
             onChangeText={setMail}
           />
 
-          <Text style={s.lbl}>
-            SENHA
-          </Text>
+          <Text style={s.lbl}>SENHA</Text>
 
-          <View style={s.linha}>
+          <View style={s.linhaSenha}>
             <TextInput
-              style={s.campo}
+              style={s.campoSenha}
               placeholder="••••••••"
               placeholderTextColor="rgba(255,255,255,0.2)"
               value={senha}
@@ -78,9 +67,7 @@ export default function Login({ navigation }) {
 
             <TouchableOpacity
               style={s.btnOlho}
-              onPress={() =>
-                setVerSenha(!verSenha)
-              }
+              onPress={() => setVerSenha(!verSenha)}
             >
               <Text style={s.txtOlho}>
                 {verSenha ? '🙈' : '👁️'}
@@ -88,23 +75,16 @@ export default function Login({ navigation }) {
             </TouchableOpacity>
           </View>
 
-          <TouchableOpacity
-            style={s.btnEntrar}
-            onPress={() => entrar()}>
+          <TouchableOpacity style={s.btnEntrar} onPress={entrar}>
             <Text style={s.txtBtn}>ENTRAR</Text>
           </TouchableOpacity>
         </View>
 
         <View style={s.rodape}>
-          <Text style={s.txtRodape}>
-            Não tem conta?
-          </Text>
+          <Text style={s.txtRodape}>Não tem conta?</Text>
 
-          <TouchableOpacity
-            onPress={() => navigation?.navigate('Cadastro')}>
-            <Text style={s.linkRodape}>
-              Cadastre-se
-            </Text>
+          <TouchableOpacity onPress={() => navigation?.navigate('Cadastro')}>
+            <Text style={s.linkRodape}> Cadastre-se</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -118,8 +98,8 @@ const s = StyleSheet.create({
   },
 
   sombra: {
-    backgroundColor:
-      'rgba(0,0,0,0.72)',
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.72)',
   },
 
   area: {
@@ -151,12 +131,10 @@ const s = StyleSheet.create({
 
   box: {
     width: '100%',
-    backgroundColor:
-      'rgba(20,20,20,0.85)',
+    backgroundColor: 'rgba(20,20,20,0.85)',
     borderRadius: 18,
     borderWidth: 1,
-    borderColor:
-      'rgba(201,168,106,0.15)',
+    borderColor: 'rgba(201,168,106,0.15)',
     padding: 24,
   },
 
@@ -169,7 +147,7 @@ const s = StyleSheet.create({
   },
 
   campo: {
-    backgroundColor: '#111',
+    backgroundColor: '#000',
     borderWidth: 1,
     borderColor: 'rgba(201,168,106,0.2)',
     borderRadius: 10,
@@ -178,20 +156,34 @@ const s = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 13,
     marginBottom: 20,
-    flex: 1,
-    marginBottom: 0,
   },
 
-  linha: {
+  linhaSenha: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 20,
+    position: 'relative',
+  },
+
+  campoSenha: {
+    flex: 1,
+    backgroundColor: '#000',
+    borderWidth: 1,
+    borderColor: 'rgba(201,168,106,0.2)',
+    borderRadius: 10,
+    color: '#fff',
+    fontSize: 15,
+    paddingHorizontal: 14,
+    paddingVertical: 13,
+    paddingRight: 45, 
   },
 
   btnOlho: {
     position: 'absolute',
-    right: 14,
-    padding: 4,
+    right: 12,
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 
   txtOlho: {
