@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import {View,Text,StyleSheet,TextInput,TouchableOpacity,ImageBackground,Alert,ScrollView} from 'react-native';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, ImageBackground, Alert, ScrollView } from 'react-native';
+import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
 
 export default function Cadastro({ navigation }) {
   const [nome, setNome] = useState('');
@@ -8,25 +9,36 @@ export default function Cadastro({ navigation }) {
   const [senha, setSenha] = useState('');
   const [confirma, setConfirma] = useState('');
 
-  function cadastrar() {
-    if (
-      !nome.trim() ||
-      !email.trim() ||
-      !telefone.trim() ||
-      !senha.trim() ||
-      !confirma.trim()
-    ) {
+  const auth = getAuth();
+
+  const cadastrar = () => {
+
+    if (!nome.trim() || !email.trim() || !telefone.trim() || !senha.trim() || !confirma.trim()) {
       Alert.alert('Atenção', 'Preencha todos os campos.');
       return;
     }
-
     if (senha !== confirma) {
       Alert.alert('Atenção', 'As senhas não coincidem.');
       return;
     }
 
+    createUserWithEmailAndPassword(auth, email, senha)
+      .then((userCredential) => {
+        // Signed up 
+        console.log('Conta criada! ')
+        const user = userCredential.user;
+        console.log(user)
+        // ...
+      })
+      .catch((error) => {
+        console.log(error)
+        Alert.alert(error.message)
+        // ..
+      });
+
     Alert.alert(
       'Cadastro realizado!',
+      '',
       [
         {
           text: 'Entrar',
@@ -118,8 +130,7 @@ export default function Cadastro({ navigation }) {
 
           <TouchableOpacity
             style={styles.botao}
-            onPress={cadastrar}
-          >
+            onPress={() => cadastrar()}>
             <Text style={styles.botaoTexto}>
               CRIAR CONTA
             </Text>

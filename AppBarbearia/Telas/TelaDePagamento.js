@@ -11,7 +11,7 @@ export default function Pagamento() {
 
   return (
     <ScrollView style={s.container} contentContainerStyle={s.content}>
-      <Text style={s.title}>THE <Text style={s.gold}>CUT</Text></Text>
+      <Text style={s.title}>KINGS <Text style={s.gold}>BARBER</Text></Text>
       <View style={s.divider} />
 
    

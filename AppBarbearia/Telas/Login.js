@@ -1,17 +1,34 @@
 import { useState } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, ImageBackground, Alert } from 'react-native';
+import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
+import { firebaseConfig } from "../firebaseConfig";
 
 export default function Login({ navigation }) {
   const [mail, setMail] = useState('');
   const [senha, setSenha] = useState('');
   const [verSenha, setVerSenha] = useState(false);
 
+  const auth = getAuth();
+
   const entrar = () => {
     if (!mail.trim() || !senha.trim()) {
       Alert.alert('Atenção', 'Preencha e-mail e senha.');
       return;
+    } else {
+    signInWithEmailAndPassword(auth, mail, senha)
+      .then((userCredential) => {
+        // Signed in 
+        const user = userCredential.user;
+        console.log(user)
+        navigation.navigate('goHome')
+        // ...
+      })
+      .catch((error) => {
+        console.log(error)
+        Alert.alert(error.message)
+      });
     }
-  };
+  }
 
   return (
     <ImageBackground
@@ -73,8 +90,7 @@ export default function Login({ navigation }) {
 
           <TouchableOpacity
             style={s.btnEntrar}
-            onPress={() => navigation?.navigate('goHome')}
-          >
+            onPress={() => entrar()}>
             <Text style={s.txtBtn}>ENTRAR</Text>
           </TouchableOpacity>
         </View>
@@ -102,7 +118,6 @@ const s = StyleSheet.create({
   },
 
   sombra: {
-    ...StyleSheet.absoluteFillObject,
     backgroundColor:
       'rgba(0,0,0,0.72)',
   },
@@ -164,7 +179,7 @@ const s = StyleSheet.create({
     paddingVertical: 13,
     marginBottom: 20,
     flex: 1,
-    marginBottom: 0
+    marginBottom: 0,
   },
 
   linha: {

@@ -4,7 +4,7 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Alert,
 const { width } = Dimensions.get('window');
 const CELL = Math.floor((width - 60) / 7);
 
-const servicos = ['Degradê Clássico', 'Skin Fade', 'Undercut', 'Pompadour', 'Buzz Cut', 'Texturizado'];
+const servicos = ['Corte', 'Sobrancelha', 'Barba', 'Lavar cabelo', '', 'Texturizado'];
 const horarios = ['09:00', '10:00', '11:00', '13:00', '14:00', '15:00', '16:00', '17:00'];
 const SEMANA = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
 const MESES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
@@ -140,33 +140,158 @@ export default function Agendar({ navigation }) {
 }
 
 const s = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#0D0D0D' },
-  titulo: { color: '#C9A86A', fontSize: 18, fontWeight: '800', letterSpacing: 4, textAlign: 'center', paddingTop: 56, paddingBottom: 20 },
-  label: { color: 'rgba(201,168,106,0.7)', fontSize: 11, fontWeight: '700', letterSpacing: 2, marginBottom: 10, marginTop: 4 },
-  input: { backgroundColor: '#1a1a1a', borderWidth: 1, borderColor: 'rgba(201,168,106,0.2)', borderRadius: 12, color: '#fff', fontSize: 15, paddingHorizontal: 16, paddingVertical: 14, marginBottom: 24 },
-  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginBottom: 24 },
-  chip: { paddingHorizontal: 16, paddingVertical: 10, borderRadius: 50, borderWidth: 1, borderColor: 'rgba(201,168,106,0.3)' },
-  chipAtivo: { backgroundColor: '#C9A86A', borderColor: '#C9A86A' },
-  chipTxt: { color: 'rgba(255,255,255,0.6)', fontSize: 13 },
-  chipTxtAtivo: { color: '#111', fontWeight: '700' },
-  // Calendário
-  calendario: { backgroundColor: '#1a1a1a', borderRadius: 14, borderWidth: 1, borderColor: 'rgba(201,168,106,0.15)', padding: 10, marginBottom: 24 },
-  calRow: { flexDirection: 'row' },
-  calCell: { width: CELL, height: CELL, alignItems: 'center', justifyContent: 'center' },
-  calHeader: { color: 'rgba(201,168,106,0.6)', fontSize: 10, fontWeight: '700' },
-  calDia: { width: CELL - 6, height: CELL - 6, borderRadius: (CELL - 6) / 2, alignItems: 'center', justifyContent: 'center' },
-  calDiaAtivo: { backgroundColor: '#C9A86A' },
-  calDiaHoje: { borderWidth: 1, borderColor: '#C9A86A' },
-  calDiaTxt: { color: '#fff', fontSize: 12, fontWeight: '500' },
-  calDiaTxtAtivo: { color: '#111', fontWeight: '800' },
-  calDiaTxtHoje: { color: '#C9A86A' },
-  calDiaPassado: { color: 'rgba(255,255,255,0.2)' },
- 
-  resumo: { backgroundColor: '#1a1a1a', borderLeftWidth: 3, borderLeftColor: '#C9A86A', borderRadius: 10, padding: 16, marginBottom: 24 },
-  resumoTitulo: { color: '#C9A86A', fontSize: 11, fontWeight: '700', letterSpacing: 2, marginBottom: 10 },
-  resumoTxt: { color: 'rgba(255,255,255,0.7)', fontSize: 14, marginBottom: 6 },
-  btnConfirmar: { backgroundColor: '#C9A86A', paddingVertical: 16, borderRadius: 50, alignItems: 'center', marginBottom: 12 },
-  btnTxt: { color: '#111', fontSize: 14, fontWeight: '800', letterSpacing: 1.5 },
-  btnVoltar: { alignItems: 'center', paddingVertical: 10 },
-  btnVoltarTxt: { color: 'rgba(255,255,255,0.35)', fontSize: 14 },
+  container: {
+    flex: 1,
+    backgroundColor: '#0D0D0D',
+  },
+  scrollContainer: {
+    padding: 20,
+    paddingBottom: 40,
+  },
+  titulo: {
+    color: '#C9A86A',
+    fontSize: 18,
+    fontWeight: '800',
+    letterSpacing: 2,
+    textAlign: 'center',
+    paddingTop: 56,
+    paddingBottom: 20,
+  },
+  label: {
+    color: 'rgba(201,168,106,0.7)',
+    fontSize: 12,
+    fontWeight: '700',
+    marginTop: 4,
+    marginBottom: 10,
+  },
+  input: {
+    backgroundColor: '#1A1A1A',
+    borderWidth: 1,
+    borderColor: 'rgba(201,168,106,0.2)',
+    borderRadius: 12,
+    color: '#FFF',
+    fontSize: 15,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    marginBottom: 24,
+  },
+  grid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+    marginBottom: 24,
+  },
+  chip: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 50,
+    borderWidth: 1,
+    borderColor: 'rgba(201,168,106,0.3)',
+  },
+  chipSelecionado: {
+    backgroundColor: '#C9A86A',
+    borderColor: '#C9A86A',
+  },
+
+  chipTexto: {
+    color: 'rgba(255,255,255,0.65)',
+    fontSize: 13,
+  },
+
+  chipTextoSelecionado: {
+    color: '#111',
+    fontWeight: '700',
+  },
+
+  calendario: {
+    backgroundColor: '#1A1A1A',
+    borderWidth: 1,
+    borderColor: 'rgba(201,168,106,0.15)',
+    borderRadius: 14,
+    padding: 10,
+    marginBottom: 24,
+  },
+  linhaCalendario: {
+    flexDirection: 'row',
+  },
+  celulaCalendario: {
+    width: TAMANHO_CELULA,
+    height: TAMANHO_CELULA,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  cabecalhoCalendario: {
+    color: 'rgba(201,168,106,0.6)',
+    fontSize: 10,
+    fontWeight: '700',
+  },
+  diaCalendario: {
+    width: TAMANHO_CELULA - 6,
+    height: TAMANHO_CELULA - 6,
+    borderRadius: (TAMANHO_CELULA - 6) / 2,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  diaCalendarioSelecionado: {
+    backgroundColor: '#C9A86A',
+  },
+  diaCalendarioHoje: {
+    borderWidth: 1,
+    borderColor: '#C9A86A',
+  },
+  textoDiaCalendario: {
+    color: '#FFF',
+    fontSize: 12,
+    fontWeight: '500',
+  },
+  textoDiaCalendarioSelecionado: {
+    color: '#111',
+    fontWeight: '800',
+  },
+  textoDiaCalendarioHoje: {
+    color: '#C9A86A',
+  },
+  textoDiaCalendarioPassado: {
+    color: 'rgba(255,255,255,0.2)',
+  },
+  resumoTxt: {
+    backgroundColor: '#1A1A1A',
+    borderLeftWidth: 3,
+    borderLeftColor: '#C9A86A',
+    borderRadius: 10,
+    padding: 16,
+    marginBottom: 24,
+  },
+  resumoTitulo: {
+    color: '#C9A86A',
+    fontSize: 12,
+    fontWeight: '700',
+    marginBottom: 10,
+  },
+  resumoTexto: {
+    color: 'rgba(255,255,255,0.75)',
+    fontSize: 14,
+    marginBottom: 6,
+  },
+  botaoConfirmar: {
+    backgroundColor: '#C9A86A',
+    paddingVertical: 16,
+    borderRadius: 50,
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  botaoConfirmarTexto: {
+    color: '#111',
+    fontSize: 14,
+    fontWeight: '800',
+    letterSpacing: 1,
+  },
+  botaoVoltar: {
+    alignItems: 'center',
+    paddingVertical: 10,
+  },
+  botaoVoltarTexto: {
+    color: 'rgba(255,255,255,0.4)',
+    fontSize: 14,
+  },
 });
