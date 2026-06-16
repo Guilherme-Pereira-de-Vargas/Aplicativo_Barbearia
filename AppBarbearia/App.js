@@ -7,6 +7,7 @@ import Cadastro from "./Telas/Cadastro";
 import Home from "./Telas/Home";
 import Agendar from "./Telas/Agendamento";
 import Catalogo from "./Telas/Cortes";
+import Contato from "./Telas/Contato";
 
 export default function App() {
 
@@ -24,6 +25,7 @@ export default function App() {
         <Stack.Screen name="goHome" component={Home}/>
         <Stack.Screen name="Agendar" component={Agendar}/>
         <Stack.Screen name="Catalogo" component={Catalogo}/>
+        <Stack.Screen name="Contato" component={Contato}/>
       </Stack.Navigator>
     </NavigationContainer>
   );

@@ -1,136 +1,267 @@
-import { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Alert, Dimensions } from 'react-native';
+import { useEffect, useState } from 'react';
+import {
+  View, Text, StyleSheet, ScrollView,
+  TouchableOpacity, Alert, ActivityIndicator
+} from 'react-native';
+import {
+  collection,
+  addDoc,
+  query,
+  where,
+  onSnapshot,
+  getDoc,
+  getDocs,
+  doc,
+  Timestamp
+} from 'firebase/firestore';
+import { getAuth } from 'firebase/auth';
+import { database } from '../firebaseConfig';
 
-const { width } = Dimensions.get('window');
-const TAMANHO_CELULA = Math.floor((width - 60) / 7);
+const SERVICOS = [
+  { nome: 'Corte', preco: 35 },
+  { nome: 'Barba', preco: 25 },
+  { nome: 'Sobrancelha', preco: 15 },
+  { nome: 'Lavar cabelo', preco: 20 },
+  { nome: 'Texturizado', preco: 60 },
+];
 
-const servicos = ['Corte', 'Sobrancelha', 'Barba', 'Lavar cabelo', '', 'Texturizado'];
-const horarios = ['09:00', '10:00', '11:00', '13:00', '14:00', '15:00', '16:00', '17:00'];
-const SEMANA = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
-const MESES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
-
-const buildCalendario = () => {
-  const hoje = new Date();
-  const ano = hoje.getFullYear();
-  const mes = hoje.getMonth();
-  const total = new Date(ano, mes + 1, 0).getDate();
-  const offset = new Date(ano, mes, 1).getDay();
-  const celulas = Array(offset).fill(null);
-  for (let d = 1; d <= total; d++) celulas.push(d);
-  while (celulas.length % 7 !== 0) celulas.push(null);
-  const semanas = [];
-  for (let i = 0; i < celulas.length; i += 7) semanas.push(celulas.slice(i, i + 7));
-  return { semanas, hojeNum: hoje.getDate() };
+const gerarProximos7Dias = () => {
+  const dias = [];
+  const semana = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+  const meses = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+  for (let i = 0; i < 7; i++) {
+    const data = new Date();
+    data.setDate(data.getDate() + i);
+    dias.push({
+      label: i === 0 ? 'Hoje' : semana[data.getDay()],
+      sublabel: `${data.getDate()} ${meses[data.getMonth()]}`,
+      date: data,
+    });
+  }
+  return dias;
 };
 
 export default function Agendar({ navigation }) {
-  const [servico, setServico] = useState(null);
+  const usuario = getAuth().currentUser;
+  const [servicosSelecionados, setServicosSelecionados] = useState([]);
+  const [barbeiros, setBarbeiros] = useState([]);
+  const [barbeiro, setBarbeiro] = useState(null);
   const [diaSel, setDiaSel] = useState(null);
   const [horario, setHorario] = useState(null);
-  const [nome, setNome] = useState('');
-  const { semanas, hojeNum } = buildCalendario();
-  const mesAtual = MESES[new Date().getMonth()];
+  const [horariosDisponiveis, setHorariosDisponiveis] = useState([]);
+  const [carregando, setCarregando] = useState(false);
+  const [salvando, setSalvando] = useState(false);
 
-  const confirmar = () => {
-    if (!servico || !horario || !diaSel || !nome.trim()) {
-      Alert.alert('Atenção', 'Preencha todos os campos para agendar.');
+  const toggleServico = (sv) => {
+    const existe = servicosSelecionados.some(item => item.nome === sv.nome);
+    if (existe) {
+      setServicosSelecionados(servicosSelecionados.filter(item => item.nome !== sv.nome));
+    } else {
+      setServicosSelecionados([...servicosSelecionados, sv]);
+    }
+  };
+
+  const valorTotal = servicosSelecionados.reduce((acc, item) => acc + item.preco, 0);
+
+  useEffect(() => {
+    const carregarBarbeiros = async () => {
+      try {
+        const snapshot = await getDocs(collection(database, 'barbeiros'));
+        const lista = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        setBarbeiros(lista);
+      } catch (e) {
+        console.log(e);
+      }
+    };
+    carregarBarbeiros();
+  }, []);
+
+  const dias = gerarProximos7Dias();
+
+  useEffect(() => {
+    if (!diaSel) return;
+
+    setCarregando(true);
+    setHorario(null);
+
+    const inicio = new Date(diaSel.date);
+    inicio.setHours(0, 0, 0, 0);
+    const fim = new Date(diaSel.date);
+    fim.setHours(23, 59, 59, 999);
+
+    const q = query(
+      collection(database, 'teste'),
+      where('horario', '>=', Timestamp.fromDate(inicio)),
+      where('horario', '<=', Timestamp.fromDate(fim))
+    );
+
+    const unsub = onSnapshot(q, async snapshot => {
+      const horariosOcupados = snapshot.docs.map(d => {
+        const data = d.data().horario.toDate();
+        return `${String(data.getHours()).padStart(2, '0')}:${String(data.getMinutes()).padStart(2, '0')}`;
+      });
+
+      try {
+        const docSnap = await getDoc(doc(database, 'configuracoes', 'horarios'));
+        const todos = docSnap.exists()
+          ? docSnap.data().lista
+          : ['09:00', '10:00', '11:00', '13:00', '14:00', '15:00', '16:00', '17:00'];
+
+        setHorariosDisponiveis(
+          todos.map(h => ({ hora: h, ocupado: horariosOcupados.includes(h) }))
+        );
+      } catch {
+        setHorariosDisponiveis(
+          ['09:00', '10:00', '11:00', '13:00', '14:00', '15:00', '16:00', '17:00']
+            .map(h => ({ hora: h, ocupado: horariosOcupados.includes(h) }))
+        );
+      } finally {
+        setCarregando(false);
+      }
+    });
+
+    return () => unsub();
+  }, [diaSel]);
+
+  const confirmar = async () => {
+    if (servicosSelecionados.length === 0 || !barbeiro || !diaSel || !horario) {
+      Alert.alert('Atenção', 'Preencha todos os campos antes de confirmar.');
       return;
     }
-    Alert.alert('✅ Agendado!', `${servico}\n${diaSel} de ${mesAtual} às ${horario}\nCliente: ${nome}`, [
-      { text: 'OK', onPress: () => navigation?.navigate('Inicial') }
-    ]);
+
+    setSalvando(true);
+    try {
+      const [hh, mm] = horario.split(':');
+      const dataHora = new Date(diaSel.date);
+      dataHora.setHours(Number(hh), Number(mm), 0, 0);
+
+      await addDoc(collection(database, 'teste'), {
+        nomeCliente: usuario?.displayName || usuario?.email,
+        servicos: servicosSelecionados,
+        valorTotal,
+        id: barbeiro.id,
+        nome: barbeiro.nome,
+        unidade: barbeiro.unidade,
+        horario: Timestamp.fromDate(dataHora),
+      });
+
+      Alert.alert(
+        '✅ Agendado!',
+        `${servicosSelecionados.length} serviço(s) - ${diaSel.sublabel} às ${horario}`
+      );
+    } catch (e) {
+      Alert.alert('Erro', 'Não foi possível agendar. Tente novamente.');
+    } finally {
+      setSalvando(false);
+    }
   };
 
   return (
     <View style={s.container}>
       <Text style={s.titulo}>AGENDAR</Text>
 
-      <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={s.scroll} showsVerticalScrollIndicator={false}>
 
-        
-        <Text style={s.label}>SEU NOME</Text>
-        <TextInput
-          style={s.input}
-          placeholder="Digite seu nome..."
-          placeholderTextColor="rgba(255,255,255,0.25)"
-          value={nome}
-          onChangeText={setNome}
-        />
-
-       
         <Text style={s.label}>SERVIÇO</Text>
         <View style={s.grid}>
-          {servicos.map(sv => (
-            <TouchableOpacity key={sv} style={[s.chip, servico === sv && s.chipAtivo]} onPress={() => setServico(sv)}>
-              <Text style={[s.chipTxt, servico === sv && s.chipTxtAtivo]}>{sv}</Text>
-            </TouchableOpacity>
-          ))}
+          {SERVICOS.map(sv => {
+            const ativo = servicosSelecionados.some(item => item.nome === sv.nome);
+            return (
+              <TouchableOpacity
+                key={sv.nome}
+                style={[s.chip, ativo && s.chipAtivo]}
+                onPress={() => toggleServico(sv)}
+              >
+                <Text style={[s.chipTxt, ativo && s.chipTxtAtivo]}>{sv.nome}</Text>
+                <Text style={[s.chipPreco, ativo && s.chipTxtAtivo]}>R$ {sv.preco}</Text>
+              </TouchableOpacity>
+            );
+          })}
         </View>
 
-       
-        <Text style={s.label}>DATA — {mesAtual.toUpperCase()}</Text>
-        <View style={s.calendario}>
-     
-          <View style={s.calRow}>
-            {SEMANA.map(d => (
-              <View key={d} style={s.calCell}>
-                <Text style={s.calHeader}>{d}</Text>
-              </View>
-            ))}
-          </View>
-      
-          {semanas.map((semana, si) => (
-            <View key={si} style={s.calRow}>
-              {semana.map((dia, di) => {
-                const passado = dia && dia < hojeNum;
-                const ativo = dia === diaSel;
-                const hoje = dia === hojeNum;
-                return (
-                  <TouchableOpacity
-                    key={di}
-                    style={s.calCell}
-                    onPress={() => dia && !passado && setDiaSel(dia)}
-                    activeOpacity={dia && !passado ? 0.7 : 1}
-                  >
-                    {dia ? (
-                      <View style={[s.calDia, ativo && s.calDiaAtivo, hoje && !ativo && s.calDiaHoje]}>
-                        <Text style={[s.calDiaTxt, passado && s.calDiaPassado, ativo && s.calDiaTxtAtivo, hoje && !ativo && s.calDiaTxtHoje]}>
-                          {dia}
-                        </Text>
-                      </View>
-                    ) : <View style={s.calCell} />}
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
-          ))}
-        </View>
-
-      
-        <Text style={s.label}>HORÁRIO</Text>
+        {/* BARBEIROS */}
+        <Text style={s.label}>BARBEIRO</Text>
         <View style={s.grid}>
-          {horarios.map(h => (
-            <TouchableOpacity key={h} style={[s.chip, horario === h && s.chipAtivo]} onPress={() => setHorario(h)}>
-              <Text style={[s.chipTxt, horario === h && s.chipTxtAtivo]}>{h}</Text>
+          {barbeiros.map((b) => (
+            <TouchableOpacity
+              key={b.id}
+              style={[s.chip, barbeiro?.id === b.id && s.chipAtivo]}
+              onPress={() => setBarbeiro(b)}
+            >
+              <Text style={[s.chipTxt, barbeiro?.id === b.id && s.chipTxtAtivo]}>{b.nome}</Text>
+              <Text style={[s.chipPreco, barbeiro?.id === b.id && s.chipTxtAtivo]}>{b.unidade}</Text>
             </TouchableOpacity>
           ))}
         </View>
 
-  
-        {servico && horario && diaSel && nome.trim() ? (
+        {/* DATA */}
+        <Text style={s.label}>DATA</Text>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={s.diasRow}>
+          {dias.map((dia, i) => (
+            <TouchableOpacity
+              key={i}
+              style={[s.diaCard, diaSel?.sublabel === dia.sublabel && s.diaCardAtivo]}
+              onPress={() => setDiaSel(dia)}
+            >
+              <Text style={[s.diaNome, diaSel?.sublabel === dia.sublabel && s.diaAtivoTxt]}>
+                {dia.label}
+              </Text>
+              <Text style={[s.diaNum, diaSel?.sublabel === dia.sublabel && s.diaAtivoTxt]}>
+                {dia.sublabel}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+
+        {/* HORÁRIOS */}
+        {diaSel && (
+          <>
+            <Text style={[s.label, { marginTop: 24 }]}>HORÁRIO</Text>
+            {carregando ? (
+              <ActivityIndicator color="#C9A86A" />
+            ) : (
+              <View style={s.grid}>
+                {horariosDisponiveis.map(({ hora, ocupado }) => (
+                  <TouchableOpacity
+                    key={hora}
+                    style={[s.chip, horario === hora && s.chipAtivo, ocupado && s.chipOcupado]}
+                    onPress={() => !ocupado && setHorario(hora)}
+                    disabled={ocupado}
+                  >
+                    <Text style={[s.chipTxt, horario === hora && s.chipTxtAtivo, ocupado && s.chipTxtOcupado]}>
+                      {hora}
+                    </Text>
+                    {ocupado && <Text style={s.chipTxtOcupado}>Ocupado</Text>}
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )}
+          </>
+        )}
+
+        {/* RESUMO */}
+        {servicosSelecionados.length > 0 && diaSel && horario && barbeiro && (
           <View style={s.resumo}>
             <Text style={s.resumoTitulo}>RESUMO</Text>
-            <Text style={s.resumoTxt}>✂️  {servico}</Text>
-            <Text style={s.resumoTxt}>📅  {diaSel} de {mesAtual} às {horario}</Text>
-            <Text style={s.resumoTxt}>👤  {nome}</Text>
+            <Text style={s.resumoTxt}>💈 {barbeiro.nome}</Text>
+            <Text style={s.resumoTxt}>🏪 {barbeiro.unidade}</Text>
+            {servicosSelecionados.map(item => (
+              <Text key={item.nome} style={s.resumoTxt}>✂️ {item.nome} - R$ {item.preco}</Text>
+            ))}
+            <Text style={s.resumoTxt}>📅 {diaSel.sublabel} às {horario}</Text>
+            <Text style={s.resumoTxt}>💰 Total: R$ {valorTotal}</Text>
           </View>
-        ) : null}
+        )}
 
-        <TouchableOpacity style={s.btnConfirmar} onPress={confirmar} activeOpacity={0.85}>
-          <Text style={s.btnTxt}>CONFIRMAR AGENDAMENTO</Text>
+        {/* BOTÕES */}
+        <TouchableOpacity style={s.btnConfirmar} onPress={confirmar} disabled={salvando}>
+          {salvando
+            ? <ActivityIndicator color="#111" />
+            : <Text style={s.btnTxt}>CONFIRMAR AGENDAMENTO</Text>
+          }
         </TouchableOpacity>
 
-        <TouchableOpacity style={s.btnVoltar} onPress={() => navigation?.goBack()} activeOpacity={0.7}>
+        <TouchableOpacity style={s.btnVoltar} onPress={() => navigation?.goBack()}>
           <Text style={s.btnVoltarTxt}>Voltar</Text>
         </TouchableOpacity>
 
@@ -140,158 +271,56 @@ export default function Agendar({ navigation }) {
 }
 
 const s = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#0D0D0D',
-  },
-  scrollContainer: {
-    padding: 20,
-    paddingBottom: 40,
-  },
+  container: { flex: 1, backgroundColor: '#0D0D0D' },
+  scroll: { padding: 20, paddingBottom: 40 },
   titulo: {
-    color: '#C9A86A',
-    fontSize: 18,
-    fontWeight: '800',
-    letterSpacing: 2,
-    textAlign: 'center',
-    paddingTop: 56,
-    paddingBottom: 20,
+    color: '#C9A86A', fontSize: 18, fontWeight: '800',
+    letterSpacing: 2, textAlign: 'center', paddingTop: 56, paddingBottom: 20,
   },
   label: {
-    color: 'rgba(201,168,106,0.7)',
-    fontSize: 12,
-    fontWeight: '700',
-    marginTop: 4,
-    marginBottom: 10,
-  },
-  input: {
-    backgroundColor: '#1A1A1A',
-    borderWidth: 1,
-    borderColor: 'rgba(201,168,106,0.2)',
-    borderRadius: 12,
-    color: '#FFF',
-    fontSize: 15,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    marginBottom: 24,
+    color: 'rgba(201,168,106,0.7)', fontSize: 12,
+    fontWeight: '700', marginBottom: 10,
   },
   grid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
+    justifyContent: 'center',
+    alignItems: 'center',
     gap: 10,
-    marginBottom: 24,
+    marginBottom: 8,
   },
   chip: {
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 50,
-    borderWidth: 1,
-    borderColor: 'rgba(201,168,106,0.3)',
-  },
-  chipSelecionado: {
-    backgroundColor: '#C9A86A',
-    borderColor: '#C9A86A',
-  },
-
-  chipTexto: {
-    color: 'rgba(255,255,255,0.65)',
-    fontSize: 13,
-  },
-
-  chipTextoSelecionado: {
-    color: '#111',
-    fontWeight: '700',
-  },
-
-  calendario: {
-    backgroundColor: '#1A1A1A',
-    borderWidth: 1,
-    borderColor: 'rgba(201,168,106,0.15)',
-    borderRadius: 14,
-    padding: 10,
-    marginBottom: 24,
-  },
-  linhaCalendario: {
-    flexDirection: 'row',
-  },
-  celulaCalendario: {
-    width: TAMANHO_CELULA,
-    height: TAMANHO_CELULA,
-    justifyContent: 'center',
+    paddingHorizontal: 16, paddingVertical: 10,
+    borderRadius: 50, borderWidth: 1, borderColor: 'rgba(201,168,106,0.3)',
     alignItems: 'center',
   },
-  cabecalhoCalendario: {
-    color: 'rgba(201,168,106,0.6)',
-    fontSize: 10,
-    fontWeight: '700',
+  chipAtivo: { backgroundColor: '#C9A86A', borderColor: '#C9A86A' },
+  chipOcupado: { borderColor: 'rgba(255,255,255,0.1)', opacity: 0.4 },
+  chipTxt: { color: 'rgba(255,255,255,0.65)', fontSize: 13 },
+  chipPreco: { color: 'rgba(255,255,255,0.35)', fontSize: 11, marginTop: 2 },
+  chipTxtAtivo: { color: '#111', fontWeight: '700' },
+  chipTxtOcupado: { color: 'rgba(255,255,255,0.3)', fontSize: 10 },
+  diasRow: { marginBottom: 4 },
+  diaCard: {
+    alignItems: 'center', paddingVertical: 12, paddingHorizontal: 16,
+    borderRadius: 14, borderWidth: 1, borderColor: 'rgba(201,168,106,0.2)',
+    marginRight: 10, backgroundColor: '#1A1A1A',
   },
-  diaCalendario: {
-    width: TAMANHO_CELULA - 6,
-    height: TAMANHO_CELULA - 6,
-    borderRadius: (TAMANHO_CELULA - 6) / 2,
-    justifyContent: 'center',
-    alignItems: 'center',
+  diaCardAtivo: { backgroundColor: '#C9A86A', borderColor: '#C9A86A' },
+  diaNome: { color: 'rgba(255,255,255,0.5)', fontSize: 11, fontWeight: '700' },
+  diaNum: { color: '#FFF', fontSize: 13, fontWeight: '600', marginTop: 2 },
+  diaAtivoTxt: { color: '#111' },
+  resumo: {
+    backgroundColor: '#1A1A1A', borderLeftWidth: 3,
+    borderLeftColor: '#C9A86A', borderRadius: 10, padding: 16, marginVertical: 20,
   },
-  diaCalendarioSelecionado: {
-    backgroundColor: '#C9A86A',
+  resumoTitulo: { color: '#C9A86A', fontSize: 12, fontWeight: '700', marginBottom: 10 },
+  resumoTxt: { color: 'rgba(255,255,255,0.75)', fontSize: 14, marginBottom: 6 },
+  btnConfirmar: {
+    backgroundColor: '#C9A86A', paddingVertical: 16,
+    borderRadius: 50, alignItems: 'center', marginBottom: 12, marginTop: 4,
   },
-  diaCalendarioHoje: {
-    borderWidth: 1,
-    borderColor: '#C9A86A',
-  },
-  textoDiaCalendario: {
-    color: '#FFF',
-    fontSize: 12,
-    fontWeight: '500',
-  },
-  textoDiaCalendarioSelecionado: {
-    color: '#111',
-    fontWeight: '800',
-  },
-  textoDiaCalendarioHoje: {
-    color: '#C9A86A',
-  },
-  textoDiaCalendarioPassado: {
-    color: 'rgba(255,255,255,0.2)',
-  },
-  resumoTxt: {
-    backgroundColor: '#1A1A1A',
-    borderLeftWidth: 3,
-    borderLeftColor: '#C9A86A',
-    borderRadius: 10,
-    padding: 16,
-    marginBottom: 24,
-  },
-  resumoTitulo: {
-    color: '#C9A86A',
-    fontSize: 12,
-    fontWeight: '700',
-    marginBottom: 10,
-  },
-  resumoTexto: {
-    color: 'rgba(255,255,255,0.75)',
-    fontSize: 14,
-    marginBottom: 6,
-  },
-  botaoConfirmar: {
-    backgroundColor: '#C9A86A',
-    paddingVertical: 16,
-    borderRadius: 50,
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  botaoConfirmarTexto: {
-    color: '#111',
-    fontSize: 14,
-    fontWeight: '800',
-    letterSpacing: 1,
-  },
-  botaoVoltar: {
-    alignItems: 'center',
-    paddingVertical: 10,
-  },
-  botaoVoltarTexto: {
-    color: 'rgba(255,255,255,0.4)',
-    fontSize: 14,
-  },
+  btnTxt: { color: '#111', fontSize: 14, fontWeight: '800', letterSpacing: 1 },
+  btnVoltar: { alignItems: 'center', paddingVertical: 10 },
+  btnVoltarTxt: { color: 'rgba(255,255,255,0.4)', fontSize: 14 },
 });
