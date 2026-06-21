@@ -1,30 +1,30 @@
 import { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, ImageBackground, Alert } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TextInput,
+  TouchableOpacity,
+  Alert,
+  ImageBackground,
+} from 'react-native';
 import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
-import { doc, getDoc } from 'firebase/firestore';
-import { database } from '../firebaseConfig';
 
-export default function Login({ navigation }) {
+const BARBEIROS_TESTE = [
+  { email: 'lucas@teste.com', senha: '123456' },
+  { email: 'rafael@teste.com', senha: '123456' },
+  { email: 'mateus@teste.com', senha: '123456' },
+  { email: 'bruno@teste.com', senha: '123456' },
+  { email: 'pedro@teste.com', senha: '123456' },
+];
+
+export default function BarbeiroLogin({ navigation }) {
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
   const [mostrarSenha, setMostrarSenha] = useState(false);
+  const [carregando, setCarregando] = useState(false);
 
   const auth = getAuth();
-
-  const mostrarErroAuth = (erro) => {
-    const mensagens = {
-      'auth/invalid-email': 'O e-mail informado parece inválido.',
-      'auth/user-not-found': 'Nenhuma conta encontrada com esse e-mail.',
-      'auth/wrong-password': 'Senha incorreta. Verifique e tente novamente.',
-      'auth/too-many-requests': 'Muitas tentativas. Tente novamente em alguns instantes.',
-      'auth/network-request-failed': 'Falha de conexão. Verifique sua internet.',
-    };
-
-    Alert.alert(
-      'Ops!',
-      mensagens[erro?.code] || 'Não foi possível entrar agora. Tente novamente.'
-    );
-  };
 
   const entrar = async () => {
     if (!email.trim() || !senha.trim()) {
@@ -32,21 +32,43 @@ export default function Login({ navigation }) {
       return;
     }
 
+    const emailNormalizado = email.trim().toLowerCase();
+    const barbeiroTeste = BARBEIROS_TESTE.find(
+      (item) => item.email === emailNormalizado && item.senha === senha
+    );
+
+    if (barbeiroTeste) {
+      navigation.navigate('BarbeiroDashboard', {
+        barbeiroEmail: barbeiroTeste.email,
+      });
+      return;
+    }
+
+    setCarregando(true);
     try {
-      const credenciais = await signInWithEmailAndPassword(auth, email, senha);
+      const credenciais = await signInWithEmailAndPassword(auth, emailNormalizado, senha);
       const usuario = credenciais.user;
 
-      const snapUsuario = await getDoc(doc(database, 'usuarios', usuario.uid));
-      const dadosUsuario = snapUsuario.data();
-
-      if (dadosUsuario?.tipo === 'barbeiro') {
-        navigation.navigate('BarbeiroDashboard', { barbeiroEmail: usuario.email });
-      } else {
-        navigation.navigate('goHome');
+      if (!usuario?.email) {
+        throw new Error('Usuário inválido');
       }
+
+      navigation.navigate('BarbeiroDashboard', {
+        barbeiroEmail: usuario.email,
+      });
     } catch (erro) {
-      console.log(erro);
-      mostrarErroAuth(erro);
+      const mensagem =
+        erro?.code === 'auth/invalid-email'
+          ? 'O e-mail informado parece inválido.'
+          : erro?.code === 'auth/user-not-found'
+            ? 'Nenhuma conta encontrada com esse e-mail.'
+            : erro?.code === 'auth/wrong-password'
+              ? 'Senha incorreta.'
+              : 'Não foi possível entrar como barbeiro agora.';
+
+      Alert.alert('Erro', mensagem);
+    } finally {
+      setCarregando(false);
     }
   };
 
@@ -60,15 +82,14 @@ export default function Login({ navigation }) {
       <View style={estilos.sombra} />
 
       <View style={estilos.area}>
-        <Text style={estilos.logo}>✂️</Text>
-        <Text style={estilos.titulo}>KINGS BARBER</Text>
-        <Text style={estilos.subtitulo}>Entre na sua conta</Text>
+        <Text style={estilos.titulo}>ÁREA DO BARBEIRO</Text>
+        <Text style={estilos.subtitulo}>Acesse sua agenda</Text>
 
         <View style={estilos.caixa}>
           <Text style={estilos.rotulo}>E-MAIL</Text>
           <TextInput
             style={estilos.campo}
-            placeholder="seu@email.com"
+            placeholder="barbeiro@exemplo.com"
             placeholderTextColor="rgba(255,255,255,0.2)"
             value={email}
             onChangeText={setEmail}
@@ -88,29 +109,17 @@ export default function Login({ navigation }) {
               style={estilos.botaoOlho}
               onPress={() => setMostrarSenha(!mostrarSenha)}
             >
-              <Text style={estilos.textoOlho}>
-                {mostrarSenha ? '🙈' : '👁️'}
-              </Text>
+              <Text style={estilos.textoOlho}>{mostrarSenha ? '🙈' : '👁️'}</Text>
             </TouchableOpacity>
           </View>
 
-          <TouchableOpacity style={estilos.botaoEntrar} onPress={entrar}>
-            <Text style={estilos.textoBotao}>ENTRAR</Text>
+          <TouchableOpacity style={estilos.botaoEntrar} onPress={entrar} disabled={carregando}>
+            <Text style={estilos.textoBotao}>{carregando ? 'ENTRANDO...' : 'ENTRAR'}</Text>
           </TouchableOpacity>
         </View>
 
-        <View style={estilos.rodape}>
-          <Text style={estilos.textoRodape}>Não tem conta?</Text>
-          <TouchableOpacity onPress={() => navigation?.navigate('Cadastro')}>
-            <Text style={estilos.linkRodape}> Cadastre-se</Text>
-          </TouchableOpacity>
-        </View>
-
-        <TouchableOpacity
-          style={estilos.linkBarbeiro}
-          onPress={() => navigation?.navigate('BarbeiroLogin')}
-        >
-          <Text style={estilos.linkBarbeiroTexto}>Sou barbeiro</Text>
+        <TouchableOpacity style={estilos.botaoVoltar} onPress={() => navigation?.goBack()}>
+          <Text style={estilos.textoVoltar}>Voltar</Text>
         </TouchableOpacity>
       </View>
     </ImageBackground>
@@ -129,7 +138,7 @@ const estilos = StyleSheet.create({
   },
   sombra: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0,0,0,0.72)',
+    backgroundColor: 'rgba(0,0,0,0.76)',
   },
   area: {
     flex: 1,
@@ -137,33 +146,30 @@ const estilos = StyleSheet.create({
     justifyContent: 'center',
     padding: 24,
   },
-  logo: {
-    fontSize: 40,
-    marginBottom: 8,
-  },
   titulo: {
     color: '#C9A86A',
     fontSize: 22,
     fontWeight: '800',
-    letterSpacing: 5,
+    letterSpacing: 3,
+    textAlign: 'center',
     marginBottom: 6,
   },
   subtitulo: {
-    color: 'rgba(255,255,255,0.4)',
+    color: 'rgba(255,255,255,0.45)',
     fontSize: 13,
     letterSpacing: 1,
-    marginBottom: 32,
+    marginBottom: 24,
   },
   caixa: {
     width: '100%',
-    backgroundColor: 'rgba(20,20,20,0.85)',
+    backgroundColor: 'rgba(18,18,18,0.88)',
     borderRadius: 18,
     borderWidth: 1,
     borderColor: 'rgba(201,168,106,0.15)',
     padding: 24,
   },
   rotulo: {
-    color: 'rgba(201,168,106,0.7)',
+    color: 'rgba(201,168,106,0.75)',
     fontSize: 10,
     fontWeight: '700',
     letterSpacing: 2,
@@ -172,25 +178,24 @@ const estilos = StyleSheet.create({
   campo: {
     backgroundColor: '#000',
     borderWidth: 1,
-    borderColor: 'rgba(201,168,106,0.2)',
+    borderColor: 'rgba(201,168,106,0.18)',
     borderRadius: 10,
     color: '#fff',
     fontSize: 15,
     paddingHorizontal: 14,
     paddingVertical: 13,
-    marginBottom: 20,
+    marginBottom: 18,
   },
   linhaSenha: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 20,
-    position: 'relative',
   },
   campoSenha: {
     flex: 1,
     backgroundColor: '#000',
     borderWidth: 1,
-    borderColor: 'rgba(201,168,106,0.2)',
+    borderColor: 'rgba(201,168,106,0.18)',
     borderRadius: 10,
     color: '#fff',
     fontSize: 15,
@@ -220,26 +225,12 @@ const estilos = StyleSheet.create({
     fontWeight: '800',
     letterSpacing: 2,
   },
-  rodape: {
-    flexDirection: 'row',
-    marginTop: 28,
+  botaoVoltar: {
+    marginTop: 18,
   },
-  textoRodape: {
-    color: 'rgba(255,255,255,0.35)',
-    fontSize: 13,
-  },
-  linkRodape: {
+  textoVoltar: {
     color: '#C9A86A',
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: '700',
-  },
-  linkBarbeiro: {
-    marginTop: 14,
-  },
-  linkBarbeiroTexto: {
-    color: '#C9A86A',
-    fontSize: 13,
-    fontWeight: '700',
-    letterSpacing: 1,
   },
 });

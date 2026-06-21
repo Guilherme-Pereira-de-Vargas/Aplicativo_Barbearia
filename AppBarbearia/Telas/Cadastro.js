@@ -1,78 +1,95 @@
 import { useState } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, ImageBackground, Alert, ScrollView } from 'react-native';
-import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
+import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
+import { doc, setDoc } from 'firebase/firestore';
+import { database } from '../firebaseConfig';
 
 export default function Cadastro({ navigation }) {
   const [nome, setNome] = useState('');
   const [email, setEmail] = useState('');
   const [telefone, setTelefone] = useState('');
   const [senha, setSenha] = useState('');
-  const [confirma, setConfirma] = useState('');
+  const [confirmarSenha, setConfirmarSenha] = useState('');
 
   const auth = getAuth();
 
-  const cadastrar = () => {
+  const mostrarErroAuth = (erro) => {
+    const mensagens = {
+      'auth/email-already-in-use': 'Esse e-mail já está sendo usado por outra conta.',
+      'auth/invalid-email': 'O e-mail informado parece inválido.',
+      'auth/weak-password': 'A senha precisa ser mais forte.',
+      'auth/network-request-failed': 'Falha de conexão. Verifique sua internet.',
+    };
 
-    if (!nome.trim() || !email.trim() || !telefone.trim() || !senha.trim() || !confirma.trim()) {
+    Alert.alert(
+      'Não foi possível concluir',
+      mensagens[erro?.code] || 'Algo deu errado. Tente novamente.'
+    );
+  };
+
+  const cadastrar = async () => {
+    if (!nome.trim() || !email.trim() || !telefone.trim() || !senha.trim() || !confirmarSenha.trim()) {
       Alert.alert('Atenção', 'Preencha todos os campos.');
       return;
     }
-    if (senha !== confirma) {
+    if (senha.length < 6) {
+      Alert.alert('Atenção', 'A senha precisa ter pelo menos 6 caracteres.');
+      return;
+    }
+    if (senha !== confirmarSenha) {
       Alert.alert('Atenção', 'As senhas não coincidem.');
       return;
     }
 
-    createUserWithEmailAndPassword(auth, email, senha)
-      .then((userCredential) => {
-        // Signed up 
-        console.log('Conta criada! ')
-        const user = userCredential.user;
-        console.log(user)
-        // ...
-      })
-      .catch((error) => {
-        console.log(error)
-        Alert.alert(error.message)
-        // ..
+    try {
+      const credenciais = await createUserWithEmailAndPassword(auth, email, senha);
+      const usuario = credenciais.user;
+
+      await setDoc(doc(database, 'usuarios', usuario.uid), {
+        uid: usuario.uid,
+        nome: nome.trim(),
+        email: usuario.email,
+        telefone: telefone.trim(),
+        tipo: 'cliente',
       });
 
-    Alert.alert(
-      'Cadastro realizado!',
-      '',
-      [
-        {
-          text: 'Entrar',
-          onPress: () => navigation.navigate('Login'),
-        },
-      ]
-    );
-  }
+      Alert.alert(
+        'Cadastro realizado!',
+        '',
+        [
+          {
+            text: 'Entrar',
+            onPress: () => navigation.navigate('Login'),
+          },
+        ]
+      );
+    } catch (erro) {
+      console.log(erro);
+      mostrarErroAuth(erro);
+    }
+  };
 
   return (
     <ImageBackground
       source={require('../Imagens/hm1.jpg')}
-      style={styles.fundo}
+      style={estilos.fundo}
+      imageStyle={estilos.imagem}
       resizeMode="cover"
     >
-      <View style={styles.overlay} />
-
+      <View style={estilos.overlay} />
       <ScrollView
-        contentContainerStyle={styles.container}
+        style={estilos.scroll}
+        contentContainerStyle={estilos.container}
       >
-        <Text style={styles.marca}>✂️</Text>
+        <Text style={estilos.marca}>✂️</Text>
+        <Text style={estilos.titulo}>KINGS BARBER</Text>
+        <Text style={estilos.subtitulo}>Crie sua conta</Text>
 
-        <Text style={styles.titulo}>KINGS BARBER</Text>
-
-        <Text style={styles.subtitulo}>
-          Crie sua conta
-        </Text>
-
-        <View style={styles.card}>
-          <View style={styles.campo}>
-            <Text style={styles.label}>NOME COMPLETO</Text>
-
+        <View style={estilos.card}>
+          <View style={estilos.campo}>
+            <Text style={estilos.rotulo}>NOME COMPLETO</Text>
             <TextInput
-              style={styles.input}
+              style={estilos.input}
               placeholder="Seu nome"
               placeholderTextColor="#777"
               value={nome}
@@ -80,11 +97,10 @@ export default function Cadastro({ navigation }) {
             />
           </View>
 
-          <View style={styles.campo}>
-            <Text style={styles.label}>E-MAIL</Text>
-
+          <View style={estilos.campo}>
+            <Text style={estilos.rotulo}>E-MAIL</Text>
             <TextInput
-              style={styles.input}
+              style={estilos.input}
               placeholder="Seu email"
               placeholderTextColor="#777"
               value={email}
@@ -92,11 +108,10 @@ export default function Cadastro({ navigation }) {
             />
           </View>
 
-          <View style={styles.campo}>
-            <Text style={styles.label}>TELEFONE</Text>
-
+          <View style={estilos.campo}>
+            <Text style={estilos.rotulo}>TELEFONE</Text>
             <TextInput
-              style={styles.input}
+              style={estilos.input}
               placeholder="Seu telefone"
               placeholderTextColor="#777"
               value={telefone}
@@ -104,11 +119,10 @@ export default function Cadastro({ navigation }) {
             />
           </View>
 
-          <View style={styles.campo}>
-            <Text style={styles.label}>SENHA</Text>
-
+          <View style={estilos.campo}>
+            <Text style={estilos.rotulo}>SENHA</Text>
             <TextInput
-              style={styles.input}
+              style={estilos.input}
               placeholder="Digite sua senha"
               placeholderTextColor="#777"
               value={senha}
@@ -116,38 +130,26 @@ export default function Cadastro({ navigation }) {
             />
           </View>
 
-          <View style={styles.campo}>
-            <Text style={styles.label}>CONFIRMAR SENHA</Text>
-
+          <View style={estilos.campo}>
+            <Text style={estilos.rotulo}>CONFIRMAR SENHA</Text>
             <TextInput
-              style={styles.input}
+              style={estilos.input}
               placeholder="Confirme sua senha"
               placeholderTextColor="#777"
-              value={confirma}
-              onChangeText={setConfirma}
+              value={confirmarSenha}
+              onChangeText={setConfirmarSenha}
             />
           </View>
 
-          <TouchableOpacity
-            style={styles.botao}
-            onPress={() => cadastrar()}>
-            <Text style={styles.botaoTexto}>
-              CRIAR CONTA
-            </Text>
+          <TouchableOpacity style={estilos.botao} onPress={cadastrar}>
+            <Text style={estilos.textoBotao}>CRIAR CONTA</Text>
           </TouchableOpacity>
         </View>
 
-        <View style={styles.rodape}>
-          <Text style={styles.rodapeTexto}>
-            Já tem conta?
-          </Text>
-
-          <TouchableOpacity
-            onPress={() => navigation.navigate('Login')}
-          >
-            <Text style={styles.rodapeLink}>
-              Entrar
-            </Text>
+        <View style={estilos.rodape}>
+          <Text style={estilos.textoRodape}>Já tem conta?</Text>
+          <TouchableOpacity onPress={() => navigation.navigate('Login')}>
+            <Text style={estilos.linkRodape}>Entrar</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -155,19 +157,29 @@ export default function Cadastro({ navigation }) {
   );
 }
 
-const styles = StyleSheet.create({
+const estilos = StyleSheet.create({
   fundo: {
     flex: 1,
+    width: '100%',
+    height: '100%',
   },
-
+  imagem: {
+    width: '100%',
+    height: '100%',
+  },
   overlay: {
+    ...StyleSheet.absoluteFillObject,
     backgroundColor: 'rgba(0,0,0,0.7)',
+  },
+  scroll: {
+    flex: 1,
   },
   container: {
     flexGrow: 1,
     justifyContent: 'center',
     alignItems: 'center',
     padding: 25,
+    minHeight: '100%',
   },
   marca: {
     fontSize: 40,
@@ -192,7 +204,7 @@ const styles = StyleSheet.create({
   campo: {
     marginBottom: 15,
   },
-  label: {
+  rotulo: {
     color: '#C9A86A',
     fontSize: 12,
     fontWeight: 'bold',
@@ -214,7 +226,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 10,
   },
-  botaoTexto: {
+  textoBotao: {
     color: '#111',
     fontWeight: 'bold',
     fontSize: 14,
@@ -223,11 +235,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     marginTop: 25,
   },
-  rodapeTexto: {
+  textoRodape: {
     color: '#ccc',
     marginRight: 5,
   },
-  rodapeLink: {
+  linkRodape: {
     color: '#C9A86A',
     fontWeight: 'bold',
   },

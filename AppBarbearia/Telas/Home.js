@@ -1,54 +1,75 @@
-import { StyleSheet, View, ImageBackground, Text, TouchableOpacity } from 'react-native';
+import { Alert, StyleSheet, View, ImageBackground, Text, TouchableOpacity } from 'react-native';
+import { getAuth, signOut } from 'firebase/auth';
 import Logo from '../Componentes/logo';
 
 export default function Home({ navigation }) {
+  const auth = getAuth();
+
+  const sair = async () => {
+    try {
+      await signOut(auth);
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'Inicial' }],
+      });
+    } catch (erro) {
+      Alert.alert('Erro', 'Não foi possível sair da conta.');
+    }
+  };
+
   return (
-    <View style={styles.container}>
+    <View style={estilos.container}>
       <ImageBackground
         source={require('../Imagens/hm1.jpg')}
-        style={styles.fundo}
+        style={estilos.fundo}
+        imageStyle={estilos.imagem}
         resizeMode="cover"
       >
-        <View style={styles.overlay} />
+        <View style={estilos.overlay} />
 
         <Logo />
-
-        <Text style={styles.slogan}>✂️ Estilo que fala por você 💈</Text>
+        <Text style={estilos.frase}>✂️ Estilo que fala por você 💈</Text>
 
         <TouchableOpacity
-          style={[styles.btn, styles.btnDourado]}
+          style={[estilos.botao, estilos.botaoDourado]}
           onPress={() => navigation?.navigate('Agendar')}
           activeOpacity={0.8}
         >
-          <Text style={styles.btnTextoEscuro}>📅  Agendar</Text>
+          <Text style={estilos.textoBotaoEscuro}>📅  Agendar</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[styles.btn, styles.btnDourado]}
+          style={[estilos.botao, estilos.botaoDourado]}
           onPress={() => navigation?.navigate('Catalogo')}
           activeOpacity={0.8}
         >
-          <Text style={styles.btnTextoEscuro}>📖  Catálogo</Text>
+          <Text style={estilos.textoBotaoEscuro}>📖  Catálogo</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[styles.btn, styles.btnEscuro]}
+          style={[estilos.botao, estilos.botaoEscuro]}
           onPress={() => navigation?.navigate('Contato')}
           activeOpacity={0.8}
         >
-          <Text style={styles.btnTextoDourado}>📞  Contato</Text>
+          <Text style={estilos.textoBotaoDourado}>📞  Contato</Text>
         </TouchableOpacity>
 
+        <TouchableOpacity
+          style={[estilos.botao, estilos.botaoSair]}
+          onPress={sair}
+          activeOpacity={0.8}
+        >
+          <Text style={estilos.textoBotaoSair}>Sair</Text>
+        </TouchableOpacity>
       </ImageBackground>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
+const estilos = StyleSheet.create({
   container: {
     flex: 1,
   },
-
   fundo: {
     flex: 1,
     width: '100%',
@@ -56,13 +77,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-
+  imagem: {
+    width: '100%',
+    height: '100%',
+  },
   overlay: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: 'rgba(0, 0, 0, 0.55)',
   },
-
-  slogan: {
+  frase: {
     color: '#C9A86A',
     fontSize: 16,
     letterSpacing: 2,
@@ -71,34 +94,41 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
     textAlign: 'center',
   },
-
-  btn: {
+  botao: {
     width: '80%',
     marginTop: 16,
     paddingVertical: 16,
     borderRadius: 50,
     alignItems: 'center',
   },
-
-  btnDourado: {
+  botaoDourado: {
     backgroundColor: '#C9A86A',
   },
-
-  btnEscuro: {
+  botaoEscuro: {
     backgroundColor: '#111',
     borderWidth: 1,
     borderColor: '#C9A86A',
   },
-
-  btnTextoEscuro: {
+  botaoSair: {
+    backgroundColor: '#111',
+    borderWidth: 1,
+    borderColor: '#C9A86A',
+  },
+  textoBotaoEscuro: {
     color: '#111',
     fontSize: 15,
     fontWeight: '700',
     letterSpacing: 1.5,
     textTransform: 'uppercase',
   },
-
-  btnTextoDourado: {
+  textoBotaoDourado: {
+    color: '#C9A86A',
+    fontSize: 15,
+    fontWeight: '700',
+    letterSpacing: 1.5,
+    textTransform: 'uppercase',
+  },
+  textoBotaoSair: {
     color: '#C9A86A',
     fontSize: 15,
     fontWeight: '700',

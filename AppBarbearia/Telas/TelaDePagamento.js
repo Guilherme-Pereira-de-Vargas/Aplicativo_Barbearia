@@ -5,7 +5,7 @@ const SERVICES = [{ name: 'Corte de Cabelo', price: 45 }, { name: 'Barba', price
 const METHODS = [{ id: 'card', icon: '💳', label: 'Cartão' }, { id: 'pix', icon: '⚡', label: 'Pix' }, { id: 'cash', icon: '💵', label: 'Dinheiro' }, { id: 'debit', icon: '🏧', label: 'Débito' }];
 const TOTAL = SERVICES.reduce((s, i) => s + i.price, 0);
 
-export default function Pagamento() {
+export default function Pagamento({ navigation }) {
   const [method, setMethod] = useState('card');
   const [success, setSuccess] = useState(false);
 
@@ -82,6 +82,9 @@ export default function Pagamento() {
         <Text style={s.btnText}>Confirmar Pagamento</Text>
       </TouchableOpacity>
       <Text style={s.note}>🔒 Pagamento seguro e criptografado</Text>
+      <TouchableOpacity style={s.botaoVoltar} onPress={() => navigation?.goBack()}>
+        <Text style={s.textoBotaoVoltar}>Voltar</Text>
+      </TouchableOpacity>
 
       
       <Modal visible={success} transparent animationType="fade">
@@ -100,6 +103,22 @@ export default function Pagamento() {
 
 const s = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#0a0a0a' },
+  botaoVoltar: {
+    alignSelf: 'center',
+    marginTop: 16,
+    marginBottom: 8,
+    backgroundColor: 'rgba(17, 17, 17, 0.88)',
+    borderWidth: 1,
+    borderColor: '#C9A86A',
+    borderRadius: 999,
+    paddingHorizontal: 18,
+    paddingVertical: 10,
+  },
+  textoBotaoVoltar: {
+    color: '#C9A86A',
+    fontSize: 14,
+    fontWeight: '700',
+  },
   content: { alignItems: 'center', padding: 20, paddingBottom: 40 },
   title: { color: '#fff', fontSize: 28, fontWeight: '700', marginTop: 20 },
   gold: { color: '#C9A86A' },

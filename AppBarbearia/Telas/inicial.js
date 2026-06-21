@@ -3,68 +3,67 @@ import Logo from '../Componentes/logo';
 
 export default function Inicial({ navigation }) {
   return (
-    <View style={styles.container}>
+    <View style={estilos.container}>
       <ImageBackground
         source={require('../Imagens/cadastro.png')}
-        style={styles.fundo}
+        style={estilos.fundo}
+        imageStyle={estilos.imagem}
         resizeMode="cover"
       >
         <Logo />
         <TouchableOpacity
-          style={[styles.btn, styles.btnEntrar]}
+          style={[estilos.botao, estilos.botaoEntrar]}
           onPress={() => navigation.navigate('Login')}
         >
-          <Text style={styles.btnTextoEntrar}>Entrar</Text>
+          <Text style={estilos.textoBotaoEntrar}>Entrar</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[styles.btn, styles.btnCadastrar]}
+          style={[estilos.botao, estilos.botaoCadastrar]}
           onPress={() => navigation.navigate('Cadastro')}
         >
-          <Text style={styles.btnTextoCadastrar}>Cadastrar</Text>
+          <Text style={estilos.textoBotaoCadastrar}>Cadastrar</Text>
         </TouchableOpacity>
       </ImageBackground>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
+const estilos = StyleSheet.create({
   container: {
     flex: 1,
   },
-
   fundo: {
     flex: 1,
     width: '100%',
     height: '100%',
     alignItems: 'center',
   },
-
-  btn: {
+  imagem: {
+    width: '100%',
+    height: '100%',
+  },
+  botao: {
     width: '60%',
     paddingVertical: 10,
     borderRadius: 25,
     alignItems: 'center',
     justifyContent: 'center',
   },
-
-  btnEntrar: {
+  botaoEntrar: {
     backgroundColor: '#C9A86A',
     marginTop: 240,
   },
-
-  btnCadastrar: {
+  botaoCadastrar: {
     backgroundColor: '#111',
     marginTop: 20,
   },
-
-  btnTextoEntrar: {
+  textoBotaoEntrar: {
     color: '#fff',
     fontSize: 15,
     fontWeight: 'bold',
   },
-
-  btnTextoCadastrar: {
+  textoBotaoCadastrar: {
     color: '#fff',
     fontSize: 15,
     fontWeight: 'bold',

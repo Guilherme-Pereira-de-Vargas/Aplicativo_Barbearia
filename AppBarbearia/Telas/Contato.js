@@ -11,14 +11,14 @@ import {
 
 import { MaterialCommunityIcons, Feather } from '@expo/vector-icons';
 
-const GOLD = '#C9A84C';
-const BG = '#0D0D0D';
-const CARD_BG = '#181818';
-const BORDER = '#2e2e2e';
-const TEXT_PRIMARY = '#EEEEEE';
-const TEXT_MUTED = '#888888';
+const COR_DOURADA = '#C9A84C';
+const COR_FUNDO = '#0D0D0D';
+const COR_CARTAO = '#181818';
+const COR_BORDA = '#2e2e2e';
+const COR_TEXTO_PRINCIPAL = '#EEEEEE';
+const COR_TEXTO_MUDO = '#888888';
 
-const CONTACT_ITEMS = [
+const itensContato = [
   {
     id: 'whatsapp',
     label: 'WhatsApp',
@@ -55,32 +55,32 @@ const CONTACT_ITEMS = [
     value: 'contato@kingsbarber.com.br',
     icon: 'mail',
     iconLib: 'feather',
-    iconColor: GOLD,
+    iconColor: COR_DOURADA,
     iconBg: '#1e1e14',
     action: () => Linking.openURL('mailto:contato@kingsbarber.com.br'),
   },
   {
     id: 'address',
     label: 'Endereço',
-    value: 'Rua das Coroas, 42 — Centro',
+    value: 'Kings Barber - Criciúma, SC',
     icon: 'map-pin',
     iconLib: 'feather',
     iconColor: '#6C8FE8',
     iconBg: '#1a1e2a',
     action: () =>
       Linking.openURL(
-        'https://maps.google.com/?q=Rua+das+Coroas+42'
+        'https://www.google.com/maps/search/?api=1&query=SATC+Criciúma'
       ),
   },
 ];
 
-const HOURS = [
-  { day: 'Segunda — Sexta', time: '09:00 – 20:00', closed: false },
-  { day: 'Sábado', time: '09:00 – 18:00', closed: false },
-  { day: 'Domingo', time: 'Fechado', closed: true },
+const horarios = [
+  { dia: 'Segunda a sexta', horario: '09:00 – 17:00', fechado: false },
+  { dia: 'Sábado', horario: '09:00 – 17:00', fechado: false },
+  { dia: 'Domingo', horario: '09:00 – 17:00', fechado: false },
 ];
 
-function ContactIcon({ item }) {
+function IconeContato({ item }) {
   if (item.iconLib === 'mci') {
     return (
       <MaterialCommunityIcons
@@ -95,44 +95,44 @@ function ContactIcon({ item }) {
 
 export default function Contato({navigation}) {
   return (
-    <View style={styles.safe}>
-      <StatusBar barStyle="light-content" backgroundColor={BG} />
+    <View style={estilos.safe}>
+      <StatusBar barStyle="light-content" backgroundColor={COR_FUNDO} />
       <ScrollView
-        style={styles.scroll}
-        contentContainerStyle={styles.scrollContent}
+        style={estilos.scroll}
+        contentContainerStyle={estilos.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.header}>
-          <MaterialCommunityIcons name="crown" size={28} color={GOLD} />
-          <Text style={styles.brandName}>KINGS</Text>
-          <Text style={styles.brandSub}>BARBER SHOP</Text>
+        <View style={estilos.cabecalho}>
+          <MaterialCommunityIcons name="crown" size={28} color={COR_DOURADA} />
+          <Text style={estilos.nomeMarca}>KINGS</Text>
+          <Text style={estilos.subMarca}>BARBER SHOP</Text>
         </View>
 
-        <Text style={styles.sectionLabel}>Fale conosco</Text>
+        <Text style={estilos.rotuloSecao}>Fale conosco</Text>
 
-        <View style={styles.card}>
-          {CONTACT_ITEMS.map((item, index) => (
+        <View style={estilos.cartao}>
+          {itensContato.map((item, index) => (
             <TouchableOpacity
               key={item.id}
               style={[
-                styles.contactItem,
-                index < CONTACT_ITEMS.length - 1 && styles.contactItemBorder,
+                estilos.itemContato,
+                index < itensContato.length - 1 && estilos.bordaItemContato,
               ]}
               onPress={item.action}
               activeOpacity={0.7}
             >
               <View
                 style={[
-                  styles.iconWrap,
+                  estilos.iconeContainer,
                   { backgroundColor: item.iconBg },
                 ]}
               >
-                <ContactIcon item={item} />
+                <IconeContato item={item} />
               </View>
 
-              <View style={styles.itemText}>
-                <Text style={styles.itemLabel}>{item.label}</Text>
-                <Text style={styles.itemValue} numberOfLines={1}>
+              <View style={estilos.textoItem}>
+                <Text style={estilos.rotuloItem}>{item.label}</Text>
+                <Text style={estilos.valorItem} numberOfLines={1}>
                   {item.value}
                 </Text>
               </View>
@@ -142,44 +142,44 @@ export default function Contato({navigation}) {
           ))}
         </View>
 
-        <Text style={[styles.sectionLabel, { marginTop: 20 }]}>
-          Horário de funcionamento
-        </Text>
+        <Text style={[estilos.rotuloSecao, { marginTop: 20 }]}>Horário de funcionamento</Text>
 
-        <View style={[styles.card, styles.hoursCard]}>
-          <View style={styles.hoursHeader}>
-            <Feather name="clock" size={15} color={GOLD} />
-            <Text style={styles.hoursHeaderText}>Horários</Text>
-            <View style={styles.openBadge}>
-              <Text style={styles.openBadgeText}>ABERTO</Text>
+        <View style={[estilos.cartao, estilos.cartaoHorario]}>
+          <View style={estilos.cabecalhoHorario}>
+            <Feather name="clock" size={15} color={COR_DOURADA} />
+            <Text style={estilos.textoCabecalhoHorario}>Horários</Text>
+            <View style={estilos.bolhaAberto}>
+              <Text style={estilos.textoBolhaAberto}>ABERTO</Text>
             </View>
           </View>
 
-          {HOURS.map((row, index) => (
+          {horarios.map((linha, index) => (
             <View
-              key={row.day}
+              key={linha.dia}
               style={[
-                styles.hoursRow,
-                index < HOURS.length - 1 && styles.hoursRowBorder,
+                estilos.linhaHorario,
+                index < horarios.length - 1 && estilos.bordaLinhaHorario,
               ]}
             >
-              <Text style={styles.hoursDay}>{row.day}</Text>
-              <Text
-                style={row.closed ? styles.hoursClosed : styles.hoursTime}
-              >
-                {row.time}
+              <Text style={estilos.diaHorario}>{linha.dia}</Text>
+              <Text style={linha.fechado ? estilos.horarioFechado : estilos.horarioAberto}>
+                {linha.horario}
               </Text>
             </View>
           ))}
         </View>
 
         <TouchableOpacity
-          style={styles.ctaButton}
+          style={estilos.botaoChamada}
           onPress={() => navigation?.navigate('Agendar')}
           activeOpacity={0.85}
         >
-          <Feather name="calendar" size={20} color={BG} />
-          <Text style={styles.ctaText}>Agendar horário</Text>
+          <Feather name="calendar" size={20} color={COR_FUNDO} />
+          <Text style={estilos.textoBotaoChamada}>Agendar horário</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={estilos.botaoVoltar} onPress={() => navigation?.goBack()}>
+          <Text style={estilos.textoBotaoVoltar}>Voltar</Text>
         </TouchableOpacity>
       </ScrollView>
     </View>
@@ -187,10 +187,26 @@ export default function Contato({navigation}) {
 }
 
 // ─── Estilos ───────────────────────────────────────────────────────────
-const styles = StyleSheet.create({
+const estilos = StyleSheet.create({
   safe: {
     flex: 1,
-    backgroundColor: BG,
+    backgroundColor: COR_FUNDO,
+  },
+  botaoVoltar: {
+    alignSelf: 'center',
+    marginTop: 12,
+    marginBottom: 20,
+    backgroundColor: 'rgba(17, 17, 17, 0.88)',
+    borderWidth: 1,
+    borderColor: '#C9A86A',
+    borderRadius: 999,
+    paddingHorizontal: 18,
+    paddingVertical: 10,
+  },
+  textoBotaoVoltar: {
+    color: '#C9A86A',
+    fontSize: 14,
+    fontWeight: '700',
   },
   scroll: {
     flex: 1,
@@ -200,30 +216,28 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
 
-  // Header
-  header: {
+  cabecalho: {
     alignItems: 'center',
     paddingVertical: 28,
     borderBottomWidth: 0.5,
     borderBottomColor: '#222',
     marginBottom: 24,
   },
-  brandName: {
+  nomeMarca: {
     fontSize: 26,
     fontWeight: '500',
     color: '#fff',
     letterSpacing: 6,
     marginTop: 6,
   },
-  brandSub: {
+  subMarca: {
     fontSize: 11,
-    color: GOLD,
+    color: COR_DOURADA,
     letterSpacing: 5,
     marginTop: 2,
   },
 
-  // Labels de seção
-  sectionLabel: {
+  rotuloSecao: {
     fontSize: 10,
     color: '#666',
     letterSpacing: 3,
@@ -232,115 +246,111 @@ const styles = StyleSheet.create({
     paddingLeft: 4,
   },
 
-  // Card genérico
-  card: {
-    backgroundColor: CARD_BG,
+  cartao: {
+    backgroundColor: COR_CARTAO,
     borderRadius: 14,
     borderWidth: 0.5,
-    borderColor: BORDER,
+    borderColor: COR_BORDA,
     overflow: 'hidden',
   },
 
-  // Items de contato
-  contactItem: {
+  itemContato: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 14,
     paddingVertical: 14,
     paddingHorizontal: 16,
   },
-  contactItemBorder: {
+  bordaItemContato: {
     borderBottomWidth: 0.5,
     borderBottomColor: '#222',
   },
-  iconWrap: {
+  iconeContainer: {
     width: 40,
     height: 40,
     borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  itemText: {
+  textoItem: {
     flex: 1,
   },
-  itemLabel: {
+  rotuloItem: {
     fontSize: 12,
-    color: TEXT_MUTED,
+    color: COR_TEXTO_MUDO,
     marginBottom: 2,
   },
-  itemValue: {
+  valorItem: {
     fontSize: 15,
-    color: TEXT_PRIMARY,
+    color: COR_TEXTO_PRINCIPAL,
     fontWeight: '500',
   },
 
-  // Horários
-  hoursCard: {
+  cartaoHorario: {
     padding: 16,
   },
-  hoursHeader: {
+  cabecalhoHorario: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
     marginBottom: 12,
   },
-  hoursHeaderText: {
+  textoCabecalhoHorario: {
     fontSize: 13,
-    color: TEXT_MUTED,
+    color: COR_TEXTO_MUDO,
     letterSpacing: 1,
     flex: 1,
   },
-  openBadge: {
+  bolhaAberto: {
     backgroundColor: '#1a2e1a',
     borderRadius: 6,
     paddingHorizontal: 8,
     paddingVertical: 2,
   },
-  openBadgeText: {
+  textoBolhaAberto: {
     fontSize: 9,
     color: '#25D366',
     fontWeight: '500',
     letterSpacing: 1,
   },
-  hoursRow: {
+  linhaHorario: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingVertical: 7,
   },
-  hoursRowBorder: {
+  bordaLinhaHorario: {
     borderBottomWidth: 0.5,
     borderBottomColor: '#222',
   },
-  hoursDay: {
+  diaHorario: {
     fontSize: 13,
     color: '#aaa',
   },
-  hoursTime: {
+  horarioAberto: {
     fontSize: 13,
-    color: TEXT_PRIMARY,
+    color: COR_TEXTO_PRINCIPAL,
     fontWeight: '500',
   },
-  hoursClosed: {
+  horarioFechado: {
     fontSize: 13,
     color: '#555',
     fontStyle: 'italic',
   },
 
-  // Botão CTA
-  ctaButton: {
+  botaoChamada: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 10,
-    backgroundColor: GOLD,
+    backgroundColor: COR_DOURADA,
     borderRadius: 14,
     paddingVertical: 16,
     marginTop: 12,
   },
-  ctaText: {
+  textoBotaoChamada: {
     fontSize: 15,
     fontWeight: '500',
-    color: BG,
+    color: COR_FUNDO,
     letterSpacing: 1,
   },
 });

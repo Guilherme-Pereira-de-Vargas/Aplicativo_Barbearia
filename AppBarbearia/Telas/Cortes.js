@@ -39,6 +39,11 @@ export default function Catalogo({ navigation }) {
         numColumns={2}
         columnWrapperStyle={{ justifyContent: 'space-between', marginBottom: 16 }}
         contentContainerStyle={{ padding: 16 }}
+        ListFooterComponent={
+          <TouchableOpacity style={s.btnVoltar} onPress={() => navigation?.goBack()}>
+            <Text style={s.txtBtnVoltar}>Voltar</Text>
+          </TouchableOpacity>
+        }
         renderItem={({ item }) => (
           <TouchableOpacity style={s.card} onPress={() => setSelecionado(item)} activeOpacity={0.85}>
             <Image source={{ uri: item.imagem }} style={s.cardImg} />
@@ -80,6 +85,22 @@ export default function Catalogo({ navigation }) {
 
 const s = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#0D0D0D' },
+  btnVoltar: {
+    alignSelf: 'center',
+    backgroundColor: 'rgba(17, 17, 17, 0.88)',
+    borderWidth: 1,
+    borderColor: '#C9A86A',
+    borderRadius: 999,
+    paddingHorizontal: 18,
+    paddingVertical: 10,
+    marginTop: 8,
+    marginBottom: 24,
+  },
+  txtBtnVoltar: {
+    color: '#C9A86A',
+    fontSize: 14,
+    fontWeight: '700',
+  },
   titulo: { color: '#C9A86A', fontSize: 18, fontWeight: '800', letterSpacing: 4, textAlign: 'center', paddingTop: 56, paddingBottom: 12 },
   filtros: { paddingHorizontal: 16, alignItems: 'center', gap: 8 },
   pill: { paddingHorizontal: 16, paddingVertical: 6, borderRadius: 50, borderWidth: 1, borderColor: 'rgba(201,168,106,0.4)', marginRight: 8 },
