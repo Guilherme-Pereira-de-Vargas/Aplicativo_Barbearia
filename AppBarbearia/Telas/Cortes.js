@@ -4,18 +4,16 @@ import { View, Text, StyleSheet, FlatList, TouchableOpacity, Image, Modal, Scrol
 const { width } = Dimensions.get('window');
 
 const cortes = [
-  // Degradê (4 espaços prontos)
   { id: 'd1', nome: 'Degradê Clássico', duracao: '40 min', categoria: 'Degradê', imagem: require('../Imagens/degrade_classico.jpeg') },
   { id: 'd2', nome: 'Degradê Moderno', duracao: '45 min', categoria: 'Degradê', imagem: require('../Imagens/degrade_moderno.jpeg') },
   { id: 'd3', nome: 'Degradê Baixo', duracao: '35 min', categoria: 'Degradê', imagem: require('../Imagens/degrade_baixo.jpeg') },
   { id: 'd4', nome: 'Degradê Alto', duracao: '50 min', categoria: 'Degradê', imagem: require('../Imagens/degrade_alto.jpeg') },
-    // Clássico (4 espaços prontos)
+
   { id: 'c1', nome: 'Clássico Simples', duracao: '40 min', categoria: 'Clássico', imagem: require('../Imagens/classico_simples.jpeg') },
   { id: 'c2', nome: 'Pompadour Clássico', duracao: '50 min', categoria: 'Clássico', imagem: require('../Imagens/pompadour_classico.jpeg') },
   { id: 'c3', nome: 'Undercut Clássico', duracao: '45 min', categoria: 'Clássico', imagem: require('../Imagens/undercut_classico.jpeg') },
   { id: 'c4', nome: 'Laterais Curtas', duracao: '30 min', categoria: 'Clássico', imagem: require('../Imagens/laterais_curtas.jpeg') },
 
-  // Curto (4 espaços prontos)
   { id: 'curto1', nome: 'Buzz Cut', duracao: '25 min', categoria: 'Curto', imagem: require('../Imagens/buzz_cut.jpeg') },
   { id: 'curto2', nome: 'Corte Rápido', duracao: '20 min', categoria: 'Curto', imagem: require('../Imagens/corte_rapido.jpeg') },
   { id: 'curto3', nome: 'Texturizado Curto', duracao: '30 min', categoria: 'Curto', imagem: require('../Imagens/texturizado_curto.jpeg') },
