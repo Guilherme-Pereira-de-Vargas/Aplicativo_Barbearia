@@ -1,21 +1,13 @@
 import { useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TextInput,
-  TouchableOpacity,
-  Alert,
-  ImageBackground,
-} from 'react-native';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, Alert, ImageBackground } from 'react-native';
 import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
 
-const BARBEIROS_TESTE = [
-  { email: 'lucas@teste.com', senha: '123456' },
-  { email: 'rafael@teste.com', senha: '123456' },
-  { email: 'mateus@teste.com', senha: '123456' },
-  { email: 'bruno@teste.com', senha: '123456' },
-  { email: 'pedro@teste.com', senha: '123456' },
+const BARBEIROS = [
+  { email: 'lucas@barbeiro.com', senha: '123456' },
+  { email: 'rafael@barbeiro.com', senha: '123456' },
+  { email: 'mateus@barbeiro.com', senha: '123456' },
+  { email: 'bruno@barbeiro.com', senha: '123456' },
+  { email: 'pedro@barbeiro.com', senha: '123456' },
 ];
 
 export default function BarbeiroLogin({ navigation }) {
@@ -33,13 +25,11 @@ export default function BarbeiroLogin({ navigation }) {
     }
 
     const emailNormalizado = email.trim().toLowerCase();
-    const barbeiroTeste = BARBEIROS_TESTE.find(
-      (item) => item.email === emailNormalizado && item.senha === senha
-    );
+    const barbeiro = BARBEIROS.find((item) => item.email === emailNormalizado && item.senha === senha);
 
-    if (barbeiroTeste) {
+    if (barbeiro) {
       navigation.navigate('BarbeiroDashboard', {
-        barbeiroEmail: barbeiroTeste.email,
+        barbeiroEmail: barbeiro.email,
       });
       return;
     }

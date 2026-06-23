@@ -1,20 +1,6 @@
 import { useEffect, useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  Alert,
-  ActivityIndicator,
-} from 'react-native';
-import {
-  collection,
-  onSnapshot,
-  doc,
-  updateDoc,
-  Timestamp,
-} from 'firebase/firestore';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
+import { collection, onSnapshot, doc, updateDoc, Timestamp } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
 import { database } from '../firebaseConfig';
 

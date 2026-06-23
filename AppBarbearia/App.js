@@ -10,6 +10,7 @@ import Catalogo from "./Telas/Cortes";
 import Contato from "./Telas/Contato";
 import BarbeiroLogin from "./Telas/BarbeiroLogin";
 import BarbeiroDashboard from "./Telas/BarbeiroDashboard";
+import Pagamento from "./Telas/TelaDePagamento";
 
 export default function App() {
 
@@ -30,6 +31,7 @@ export default function App() {
         <Stack.Screen name="Contato" component={Contato}/>
         <Stack.Screen name="BarbeiroLogin" component={BarbeiroLogin}/>
         <Stack.Screen name="BarbeiroDashboard" component={BarbeiroDashboard}/>
+        <Stack.Screen name="Pagamento" component={Pagamento}/>
       </Stack.Navigator>
     </NavigationContainer>
   );

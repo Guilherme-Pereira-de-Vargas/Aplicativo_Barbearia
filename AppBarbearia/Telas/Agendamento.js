@@ -1,18 +1,6 @@
 import { useEffect, useState } from 'react';
-import {
-  View, Text, StyleSheet, ScrollView,
-  TouchableOpacity, Alert, ActivityIndicator
-} from 'react-native';
-import {
-  collection,
-  addDoc,
-  query,
-  where,
-  onSnapshot,
-  getDoc,
-  doc,
-  Timestamp
-} from 'firebase/firestore';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
+import { collection, query, where, onSnapshot, getDoc, doc, Timestamp } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
 import { database } from '../firebaseConfig';
 
@@ -25,11 +13,11 @@ const SERVICOS = [
 ];
 
 const BARBEIROS_FIXOS = [
-  { id: 1, nome: 'Lucas Mendes', email: 'lucas@teste.com' },
-  { id: 2, nome: 'Rafael Costa', email: 'rafael@teste.com' },
-  { id: 3, nome: 'Mateus Silva', email: 'mateus@teste.com' },
-  { id: 4, nome: 'Bruno Alves', email: 'bruno@teste.com' },
-  { id: 5, nome: 'Pedro Rocha', email: 'pedro@teste.com' },
+  { id: 1, nome: 'Lucas Mendes', email: 'lucas@barbeiro.com' },
+  { id: 2, nome: 'Rafael Costa', email: 'rafael@barbeiro.com' },
+  { id: 3, nome: 'Mateus Silva', email: 'mateus@barbeiro.com' },
+  { id: 4, nome: 'Bruno Alves', email: 'bruno@barbeiro.com' },
+  { id: 5, nome: 'Pedro Rocha', email: 'pedro@barbeiro.com' },
 ];
 
 const gerarProximos7Dias = () => {
@@ -137,32 +125,14 @@ export default function Agendar({ navigation }) {
       return;
     }
 
-    setSalvando(true);
-    try {
-      const [hh, mm] = horario.split(':');
-      const dataHora = new Date(diaSel.date);
-      dataHora.setHours(Number(hh), Number(mm), 0, 0);
-
-      await addDoc(collection(database, 'teste'), {
-        nomeCliente: usuario?.displayName || usuario?.email,
-        servicos: servicosSelecionados,
-        valorTotal,
-        barbeiroId: barbeiro.id,
-        barbeiroNome: barbeiro.nome,
-        barbeiroEmail: barbeiro.email || '',
-        horario: Timestamp.fromDate(dataHora),
-        status: 'agendado',
-      });
-
-      Alert.alert(
-        '✅ Agendado!',
-        `${servicosSelecionados.length} serviço(s) - ${diaSel.sublabel} às ${horario}`
-      );
-    } catch (e) {
-      Alert.alert('Erro', 'Não foi possível agendar. Tente novamente.');
-    } finally {
-      setSalvando(false);
-    }
+    navigation?.navigate('Pagamento', {
+      servicosSelecionados,
+      barbeiro,
+      diaSel,
+      horario,
+      valorTotal,
+      usuarioInfo: { nome: usuario?.displayName, email: usuario?.email },
+    });
   };
 
   return (
@@ -193,7 +163,6 @@ export default function Agendar({ navigation }) {
           </View>
         </View>
 
-        {/* BARBEIROS */}
         <Text style={s.label}>BARBEIRO</Text>
         <View style={s.sectionWrapper}>
           {debugMensagem ? (
@@ -218,7 +187,6 @@ export default function Agendar({ navigation }) {
           )}
         </View>
 
-        {/* DATA */}
         <Text style={s.label}>DATA</Text>
         <View style={s.diasWrapper}>
           <ScrollView
@@ -245,7 +213,6 @@ export default function Agendar({ navigation }) {
           </ScrollView>
         </View>
 
-        {/* HORÁRIOS */}
         {diaSel && (
           <>
             <Text style={[s.label, { marginTop: 18 }]}>HORÁRIO</Text>
@@ -271,7 +238,6 @@ export default function Agendar({ navigation }) {
           </>
         )}
 
-        {/* RESUMO */}
         {servicosSelecionados.length > 0 && diaSel && horario && barbeiro && (
           <View style={s.resumo}>
             <Text style={s.resumoTitulo}>RESUMO</Text>
@@ -284,7 +250,6 @@ export default function Agendar({ navigation }) {
           </View>
         )}
 
-        {/* BOTÕES */}
         <TouchableOpacity style={s.btnConfirmar} onPress={confirmar} disabled={salvando}>
           {salvando
             ? <ActivityIndicator color="#111" />
